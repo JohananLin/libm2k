@@ -81,6 +81,8 @@ private:
 	bool m_deinit;
 	std::string m_firmware_version;
 
+	bool hasAnalogTrigger();
+	bool hasDigitalTrigger();
 	void blinkLed(const double duration = 4, bool blocking = false);
 	void initialize();
 };
