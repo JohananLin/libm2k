@@ -327,6 +327,52 @@ std::vector<M2kAnalogOut*> M2kImpl::getAllAnalogOut()
 	return m_instancesAnalogOut;
 }
 
+void M2kImpl::startMixedSignalAcquisition(unsigned int nb_samples)
+{
+	bool hasAnalogTrigger;
+	bool hasDigitalTrigger;
+	analogSource = m_trigger->getAnalogSource();
+	digitalSource = m_trigger->getDigitalSource();
+
+	bool streamingFlagAnalog = m_trigger->getAnalogStreamingFlag();
+	bool streamingFlagDigital = m_trigger->getDigitalStreamingFlag();
+
+	hasAnalogTrigger = this->hasAnalogTrigger();
+	hasDigitalTrigger = this->hasDigitalTrigger();
+
+	m_trigger->setAnalogStreamingFlag(false);
+	m_trigger->setDigitalStreamingFlag(false);
+
+	if (!hasAnalogTrigger && !hasDigitalTrigger) {
+		m_trigger->setAnalogSource(NO_SOURCE);
+		m_trigger->setDigitalSource(SRC_ANALOG_IN);
+	} else if (!hasDigitalTrigger) {
+		m_trigger->setAnalogSource(NO_SOURCE);
+		m_trigger->setDigitalSource(SRC_ANALOG_IN);
+	} else if (!hasAnalogTrigger) {
+		m_trigger->setDigitalSource(SRC_DISABLED);
+		m_trigger->setAnalogSource(SRC_DIGITAL_IN);
+	}
+
+	m_trigger->setAnalogStreamingFlag(streamingFlagAnalog);
+	for (auto analogIn : m_instancesAnalogIn) {
+		analogIn->startAcquisition(nb_samples);
+	}
+	m_trigger->setDigitalStreamingFlag(streamingFlagDigital);
+	for (auto digital : m_instancesDigital) {
+		digital->startAcquisition(nb_samples);
+	}
+
+	if (!hasAnalogTrigger && !hasDigitalTrigger) {
+		m_trigger->setAnalogMode(CHANNEL_1, ALWAYS);
+		m_trigger->setAnalogSource(CHANNEL_1);
+	} else if (!hasDigitalTrigger) {
+		m_trigger->setAnalogSource(analogSource);
+	} else if (!hasAnalogTrigger) {
+		m_trigger->setDigitalSource(digitalSource);
+	}
+}
+
 bool M2kImpl::hasAnalogTrigger()
 {
 	enum M2K_TRIGGER_SOURCE_ANALOG source;
