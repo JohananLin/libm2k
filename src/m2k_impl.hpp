@@ -24,6 +24,7 @@
 
 #include <libm2k/m2k.hpp>
 #include "context_impl.hpp"
+#include <libm2k/enums.hpp>
 
 namespace libm2k {
 class M2kHardwareTrigger;
@@ -48,6 +49,7 @@ public:
 	bool calibrateADC();
 	bool calibrateDAC();
 	bool resetCalibration();
+	void calibrateFromContext() override;
 
 	libm2k::digital::M2kDigital* getDigital();
 	libm2k::analog::M2kPowerSupply* getPowerSupply();
@@ -66,7 +68,6 @@ public:
 	void setAdcCalibrationOffset(unsigned int chn, int offset);
 	void setAdcCalibrationGain(unsigned int chn, double gain);
 
-
 	void setLed(bool on);
 	bool getLed();
 
@@ -80,7 +81,10 @@ private:
 	bool m_sync;
 	bool m_deinit;
 	std::string m_firmware_version;
+	std::map<double, shared_ptr<struct CALIBRATION_PARAMETERS>> m_calibration_lut;
 
+	void populateLUT();
+	shared_ptr<struct CALIBRATION_PARAMETERS> getCalibrationValuesFromLUT(double temperature);
 	void blinkLed(const double duration = 4, bool blocking = false);
 	void initialize();
 };

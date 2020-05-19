@@ -400,3 +400,72 @@ bool M2kImpl::getLed()
 	}
 	return on;
 }
+
+void M2kImpl::populateLUT()
+{
+	std::string values;
+	double temperature;
+
+	// this method will throw an exception if temp_lut attribute does not exist
+	values = getContextAttributeValue("cal,temp_lut");
+
+	auto splitValues = Utils::split(values, ",");
+
+	auto it = splitValues.begin();
+	while (it != splitValues.end()) {
+		try {
+			temperature = std::stod(*it);
+			auto parameters = std::make_shared<struct CALIBRATION_PARAMETERS>();
+			parameters->adc_offset_ch_1 = std::stoi(*(++it));
+			parameters->adc_offset_ch_2 = std::stoi(*(++it));
+			parameters->adc_gain_ch_1 = std::stod(*(++it));
+			parameters->adc_gain_ch_2 = std::stod(*(++it));
+			parameters->dac_a_offset = std::stoi(*(++it));
+			parameters->dac_b_offset = std::stoi(*(++it));
+			parameters->dac_a_gain = std::stod(*(++it));
+			parameters->dac_b_gain = std::stod(*(++it));
+			it++;
+
+			m_calibration_lut.insert({temperature, parameters});
+		} catch (const std::invalid_argument&) {
+			break;
+		}
+	}
+}
+
+shared_ptr<struct CALIBRATION_PARAMETERS> M2kImpl::getCalibrationValuesFromLUT(double temperature)
+{
+	std::map<double, shared_ptr<struct CALIBRATION_PARAMETERS>>::iterator low, prev;
+
+	if (m_calibration_lut.empty()) {
+		populateLUT();
+	}
+
+	low = m_calibration_lut.lower_bound(temperature);
+	if (low == m_calibration_lut.end()) {
+		return m_calibration_lut.rbegin()->second;
+	}
+	if (low == m_calibration_lut.begin()) {
+		return low->second;
+	}
+	prev = std::prev(low);
+	if ((temperature - prev->first) < (low->first - temperature)) {
+		return prev->second;
+	}
+	return low->second;
+}
+
+void M2kImpl::calibrateFromContext()
+{
+	double temperature = getDMM("ad9963")->readChannel("temp0").value;
+	auto calibrationParameters = getCalibrationValuesFromLUT(temperature);
+
+	m_calibration->setAdcOffset(0, calibrationParameters->adc_offset_ch_1);
+	m_calibration->setAdcOffset(1, calibrationParameters->adc_offset_ch_2);
+	m_calibration->setAdcGain(0, calibrationParameters->adc_gain_ch_1);
+	m_calibration->setAdcGain(1, calibrationParameters->adc_gain_ch_2);
+	m_calibration->setDacOffset(0, calibrationParameters->dac_a_offset);
+	m_calibration->setDacOffset(1, calibrationParameters->dac_b_offset);
+	m_calibration->setDacGain(0, calibrationParameters->dac_a_gain);
+	m_calibration->setDacGain(1, calibrationParameters->dac_b_gain);
+}

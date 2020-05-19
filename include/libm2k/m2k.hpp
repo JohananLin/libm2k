@@ -107,6 +107,14 @@ public:
 
 
 	/**
+	 * @brief Calibrate both ADC and DACs using predefined calibration values located in context
+	 *
+	 * @note Only available from firmware v0.26.
+	 */
+	virtual void calibrateFromContext() = 0;
+
+
+	/**
 	* @brief Retrieve the Digital object
 	*
 	* @return On success, a pointer to a Digital object
