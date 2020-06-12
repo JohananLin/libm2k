@@ -161,7 +161,7 @@ void M2kHardwareTriggerV024Impl::setDigitalSource(M2K_TRIGGER_SOURCE_DIGITAL ext
 		source = "disable";
 		break;
 	}
-	m_digital_trigger_device->setStringValue(16, "trigger_mux_out", source);
+	m_digital_trigger_device->setStringValue(16 + 1, "trigger_mux_out", source);
 }
 
 void M2kHardwareTrigger::setDigitalSource(M2K_TRIGGER_SOURCE_DIGITAL external_src)
@@ -178,7 +178,7 @@ M2K_TRIGGER_SOURCE_DIGITAL M2kHardwareTriggerV024Impl::getDigitalSource() const
 	if (!hasCrossInstrumentTrigger()) {
 		M2kHardwareTriggerImpl::getDigitalSource();
 	}
-	source = m_digital_trigger_device->getStringValue(16, "trigger_mux_out");
+	source = m_digital_trigger_device->getStringValue(16 + 1, "trigger_mux_out");
 
 	if (source == "trigger-logic") {
 		if (getDigitalExternalCondition() != NO_TRIGGER_DIGITAL) {

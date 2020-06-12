@@ -202,7 +202,7 @@ bool M2kHardwareTriggerImpl::hasCrossInstrumentTrigger() const
 
 M2K_TRIGGER_CONDITION_DIGITAL M2kHardwareTriggerImpl::getDigitalExternalCondition() const
 {
-	std::string buf = m_digital_trigger_device->getStringValue(16, "trigger");
+	std::string buf = m_digital_trigger_device->getStringValue(16 + 1, "trigger");
 
 	auto it = std::find(m_trigger_digital_cond.begin(),
 			    m_trigger_digital_cond.end(), buf.c_str());
@@ -215,12 +215,13 @@ M2K_TRIGGER_CONDITION_DIGITAL M2kHardwareTriggerImpl::getDigitalExternalConditio
 
 void M2kHardwareTriggerImpl::setDigitalExternalCondition(M2K_TRIGGER_CONDITION_DIGITAL ext_cond)
 {
-	m_digital_trigger_device->setStringValue(16, "trigger",
+	m_digital_trigger_device->setStringValue(16 + 1, "trigger",
 						 m_trigger_digital_cond[ext_cond]);
 }
 
 M2K_TRIGGER_CONDITION_DIGITAL M2kHardwareTriggerImpl::getAnalogExternalCondition(unsigned int chnIdx)
 {
+	chnIdx++;
 	if (chnIdx >= m_num_channels) {
 		throw_exception(EXC_OUT_OF_RANGE, "Channel index is out of range");
 	}
@@ -238,6 +239,7 @@ M2K_TRIGGER_CONDITION_DIGITAL M2kHardwareTriggerImpl::getAnalogExternalCondition
 
 void M2kHardwareTriggerImpl::setAnalogExternalCondition(unsigned int chnIdx, M2K_TRIGGER_CONDITION_DIGITAL cond)
 {
+	chnIdx++;
 	if (chnIdx >= m_num_channels) {
 		throw_exception(EXC_OUT_OF_RANGE, "Channel index is out of range");
 	}
@@ -278,7 +280,7 @@ void M2kHardwareTriggerImpl::setAnalogCondition(unsigned int chnIdx, M2K_TRIGGER
 
 M2K_TRIGGER_CONDITION_DIGITAL M2kHardwareTriggerImpl::getDigitalCondition(DIO_CHANNEL chn)
 {
-	std::string trigger_val = m_digital_trigger_device->getStringValue(chn, "trigger", false);
+	std::string trigger_val = m_digital_trigger_device->getStringValue(chn+1, "trigger", false);
 	std::vector<std::string> available_digital_conditions = getAvailableDigitalConditions();
 
 	auto it = std::find(available_digital_conditions.begin(),
@@ -300,7 +302,7 @@ M2K_TRIGGER_CONDITION_DIGITAL M2kHardwareTriggerImpl::getDigitalCondition(unsign
 void M2kHardwareTriggerImpl::setDigitalCondition(DIO_CHANNEL chn, M2K_TRIGGER_CONDITION_DIGITAL cond)
 {
 	std::string trigger_val = getAvailableDigitalConditions()[cond];
-	m_digital_trigger_device->setStringValue(chn, "trigger", trigger_val, false);
+	m_digital_trigger_device->setStringValue(chn + 1, "trigger", trigger_val, false);
 }
 
 void M2kHardwareTriggerImpl::setDigitalCondition(unsigned int chn, M2K_TRIGGER_CONDITION_DIGITAL cond)
@@ -489,12 +491,12 @@ void M2kHardwareTriggerImpl::setAnalogDelay(int delay)
 
 int M2kHardwareTriggerImpl::getDigitalDelay() const
 {
-	return (int)m_digital_trigger_device->getLongValue(0, "trigger_delay", false);
+	return (int)m_digital_trigger_device->getLongValue(0 + 1, "trigger_delay", false);
 }
 
 void M2kHardwareTriggerImpl::setDigitalDelay(int delay)
 {
-	m_digital_trigger_device->setLongValue(0, delay, "trigger_delay", false);
+	m_digital_trigger_device->setLongValue(0 + 1, delay, "trigger_delay", false);
 }
 
 void M2kHardwareTriggerImpl::setDigitalStreamingFlag(bool val)
