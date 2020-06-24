@@ -48,6 +48,18 @@ std::vector<std::string> libm2k::M2kHardwareTriggerV026Impl::m_trigger_cond = {
 libm2k::M2kHardwareTriggerV026Impl::M2kHardwareTriggerV026Impl(struct iio_context *ctx, bool init) :
 	M2kHardwareTriggerV024Impl(ctx)
 {
+	bool hasTriggerSource;
+	bool hasTriggerCondition;
+	m_digital_trigger_device = make_shared<libm2k::utils::DeviceOut>(ctx, "m2k-logic-analyzer-tx");
+	if (!m_digital_trigger_device) {
+		throw_exception(EXC_INVALID_PARAMETER, "No digital TX trigger available");
+	}
+	hasTriggerSource = m_digital_trigger_device->hasGlobalAttribute(m_source_attr);
+	hasTriggerCondition = m_digital_trigger_device->hasGlobalAttribute(m_condition_attr);
+	if (!hasTriggerSource || !hasTriggerCondition) {
+		throw_exception(EXC_INVALID_PARAMETER, "Analog TX trigger is not available");
+	}
+
 	if (init) {
 		reset();
 	}
@@ -56,6 +68,28 @@ libm2k::M2kHardwareTriggerV026Impl::M2kHardwareTriggerV026Impl(struct iio_contex
 void libm2k::M2kHardwareTriggerV026Impl::reset()
 {
 	M2kHardwareTriggerV024Impl::reset();
+	setDigitalOutSource(SRC_OUT_NONE);
+	setDigitalOutCondition(NO_TRIGGER_DIGITAL);
+
+void libm2k::M2kHardwareTriggerV026Impl::setDigitalOutSource(libm2k::M2K_TRIGGER_OUT_SOURCE src)
+{
+	setTriggerOutSource(src, m_digital_trigger_device);
+}
+
+libm2k::M2K_TRIGGER_OUT_SOURCE libm2k::M2kHardwareTriggerV026Impl::getDigitalOutSource() const
+{
+	return getTriggerOutSource(m_digital_trigger_device);
+}
+
+void libm2k::M2kHardwareTriggerV026Impl::setDigitalOutCondition(libm2k::M2K_TRIGGER_CONDITION_DIGITAL cond)
+{
+	setTriggerOutCondition(cond, m_digital_trigger_device);
+}
+
+libm2k::M2K_TRIGGER_CONDITION_DIGITAL libm2k::M2kHardwareTriggerV026Impl::getDigitalOutCondition() const
+{
+	return getTriggerOutCondition(m_digital_trigger_device);
+}
 }
 
 void libm2k::M2kHardwareTriggerV026Impl::setTriggerOutSource(libm2k::M2K_TRIGGER_OUT_SOURCE src,
