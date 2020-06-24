@@ -595,3 +595,25 @@ M2K_TRIGGER_CONDITION_DIGITAL M2kHardwareTriggerImpl::getDigitalOutCondition() c
 	throw_exception(EXC_INVALID_FIRMWARE_VERSION,"v0.26");
 	return NO_TRIGGER_DIGITAL;
 }
+
+void M2kHardwareTriggerImpl::setAnalogOutSource(M2K_TRIGGER_OUT_SOURCE src)
+{
+	throw_exception(EXC_INVALID_FIRMWARE_VERSION,"v0.26");
+}
+
+M2K_TRIGGER_OUT_SOURCE M2kHardwareTriggerImpl::getAnalogOutSource() const
+{
+	throw_exception(EXC_INVALID_FIRMWARE_VERSION,"v0.26");
+	return SRC_OUT_NONE;
+}
+
+void M2kHardwareTriggerImpl::setAnalogOutCondition(M2K_TRIGGER_CONDITION_DIGITAL cond)
+{
+	throw_exception(EXC_INVALID_FIRMWARE_VERSION,"v0.26");
+}
+
+M2K_TRIGGER_CONDITION_DIGITAL M2kHardwareTriggerImpl::getAnalogOutCondition() const
+{
+	throw_exception(EXC_INVALID_FIRMWARE_VERSION,"v0.26");
+	return NO_TRIGGER_DIGITAL;
+}

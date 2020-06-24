@@ -51,11 +51,23 @@ libm2k::M2kHardwareTriggerV026Impl::M2kHardwareTriggerV026Impl(struct iio_contex
 	bool hasTriggerSource;
 	bool hasTriggerCondition;
 	m_digital_trigger_device = make_shared<libm2k::utils::DeviceOut>(ctx, "m2k-logic-analyzer-tx");
+	// both dac a and dac b share the same trigger
+	m_analog_trigger_device = make_shared<libm2k::utils::DeviceOut>(ctx, "m2k-dac-a");
 	if (!m_digital_trigger_device) {
 		throw_exception(EXC_INVALID_PARAMETER, "No digital TX trigger available");
 	}
+	if (!m_analog_trigger_device) {
+		throw_exception(EXC_INVALID_PARAMETER, "No analog TX trigger available");
+	}
+
 	hasTriggerSource = m_digital_trigger_device->hasGlobalAttribute(m_source_attr);
 	hasTriggerCondition = m_digital_trigger_device->hasGlobalAttribute(m_condition_attr);
+	if (!hasTriggerSource || !hasTriggerCondition) {
+		throw_exception(EXC_INVALID_PARAMETER, "Analog TX trigger is not available");
+	}
+
+	hasTriggerSource = m_analog_trigger_device->hasGlobalAttribute(m_source_attr);
+	hasTriggerCondition = m_analog_trigger_device->hasGlobalAttribute(m_condition_attr);
 	if (!hasTriggerSource || !hasTriggerCondition) {
 		throw_exception(EXC_INVALID_PARAMETER, "Analog TX trigger is not available");
 	}
@@ -70,6 +82,9 @@ void libm2k::M2kHardwareTriggerV026Impl::reset()
 	M2kHardwareTriggerV024Impl::reset();
 	setDigitalOutSource(SRC_OUT_NONE);
 	setDigitalOutCondition(NO_TRIGGER_DIGITAL);
+	setAnalogOutSource(SRC_OUT_NONE);
+	setAnalogOutCondition(NO_TRIGGER_DIGITAL);
+}
 
 void libm2k::M2kHardwareTriggerV026Impl::setDigitalOutSource(libm2k::M2K_TRIGGER_OUT_SOURCE src)
 {
@@ -90,6 +105,25 @@ libm2k::M2K_TRIGGER_CONDITION_DIGITAL libm2k::M2kHardwareTriggerV026Impl::getDig
 {
 	return getTriggerOutCondition(m_digital_trigger_device);
 }
+
+void libm2k::M2kHardwareTriggerV026Impl::setAnalogOutSource(libm2k::M2K_TRIGGER_OUT_SOURCE src)
+{
+	setTriggerOutSource(src, m_analog_trigger_device);
+}
+
+libm2k::M2K_TRIGGER_OUT_SOURCE libm2k::M2kHardwareTriggerV026Impl::getAnalogOutSource() const
+{
+	return getTriggerOutSource(m_analog_trigger_device);
+}
+
+void libm2k::M2kHardwareTriggerV026Impl::setAnalogOutCondition(libm2k::M2K_TRIGGER_CONDITION_DIGITAL cond)
+{
+	setTriggerOutCondition(cond, m_analog_trigger_device);
+}
+
+libm2k::M2K_TRIGGER_CONDITION_DIGITAL libm2k::M2kHardwareTriggerV026Impl::getAnalogOutCondition() const
+{
+	return getTriggerOutCondition(m_analog_trigger_device);
 }
 
 void libm2k::M2kHardwareTriggerV026Impl::setTriggerOutSource(libm2k::M2K_TRIGGER_OUT_SOURCE src,
